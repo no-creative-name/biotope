@@ -19,7 +19,10 @@
   "dependencies": {
     "@biotope/element": "^2.0.0",
     "@biotope/resource-loader": "^1.4.1",
+    "apollo-boost": "^0.3.1",
     "breakpoint-sass": "2.7.1",
+    "graphql": "^14.3.0",
+    "graphql-tag": "^2.10.1",
     "handlebars": "4.0.11",
     "sanitize.css": "^7.0.0",
     "susy": "2.2.14",
