@@ -1,5 +1,38 @@
 @import "node_modules/@biotope/element/lib/host.mixin";
 
 @include host('x-wiki') {
+    a {
+        cursor: pointer;
+        background: lightblue;
+        padding: 10px;
 
+        &:hover {
+            background: lightgrey;
+        }
+    }
+    h3 {
+        display: inline-block;
+    }
+    .statusContainer {
+        display: flex;
+        align-items: center;
+    }
+    .status {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-left: 10px;
+        margin-right: 10px;
+        background-color: black;
+        border: 3px white dotted;
+        &.open {
+            background-color: lightgreen;
+        }
+        &.closed {
+            background-color: red;
+        }
+        &.hold {
+            background-color: yellow;
+        }
+    }
 }
