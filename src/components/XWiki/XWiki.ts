@@ -2,42 +2,36 @@ import Component from '@biotope/element';
 import template from './template';
 
 import ApolloClient from 'apollo-boost';
+import { InMemoryCache } from 'apollo-cache-inmemory';
 import gql from 'graphql-tag';
 
 interface XWikiProps {
-    items
+    lifts: Lift[]
 }
 
 interface XWikiState {
-    items: any
-    liftId: string
+    lifts: Lift[]
 }
 
-enum LiftStatus {
-    OPEN,
-    CLOSED,
-    HOLD
+interface Lift {
+    name: string;
+    status: string;
+    capacity: number;
+    id: string;
 }
+
+const cache = new InMemoryCache();
 
 const client = new ApolloClient({
-    uri: 'https://snowtooth.moonhighway.com/'
+    uri: 'https://snowtooth.moonhighway.com/',
+    cache
 });
 
 class XWiki extends Component<XWikiProps, XWikiState> {
     static componentName = 'x-wiki';
 
-    private onEnterGet = (event) => {
-        if(event.keyCode === 13) {
-            event.preventDefault();
-            this.state.liftId = event.target.value;
-            this.getStatusForLiftId(this.state.liftId).then((data: any) => {
-                this.setState({ items: [data.data.Lift] })
-            })
-        }
-    }
-
     private onEnterSet = (event) => {
-        const liftId = (<HTMLInputElement>this.shadowRoot.getElementById('liftIdForStatusSet')).value;
+        const liftId = (<HTMLInputElement>this.shadowRoot.getElementById('liftSelection__select')).value;
         
         let statusToSet;
         switch(event.target.innerHTML) {
@@ -45,44 +39,67 @@ class XWiki extends Component<XWikiProps, XWikiState> {
             case 'close': statusToSet = 'CLOSED'; break;
             case 'set on hold': statusToSet = 'HOLD'; break;
         }
-        event.preventDefault();
-        this.setStatusForLiftId(liftId, statusToSet).then(() => {
-        }).then(() => {
-            client.cache.reset();
-            this.getStatusForAllLifts().then((data: any) => {
-                this.setState({ items: data.data.allLifts })
-            })
-        })
+
+        this.setStatusForLiftId(liftId, statusToSet)
     }
 
-    private getStatusForAllLifts = () => {
-        client.cache.reset();
+    private showLiftInfo = (event) => {
+        if(this.state.lifts[0].capacity == undefined) {
+            this.getCapacityForAllLifts()
+        }
+        event.target.getElementsByClassName('status__card')[0].classList.add('show');
+    }
+
+    private hideLiftInfo = (event) => {
+        event.target.getElementsByClassName('status__card')[0].classList.remove('show');
+    }
+
+    private getDataForAllLifts = () => {
         return client.query({
             query: gql`
                 query {
                     allLifts {
                         name
                         status
-                        capacity
                         id
                     }
                 }`
+        }).then((data: any) => {
+            this.setState({ lifts: data.data.allLifts })
         }).catch(error => {});
     }
 
-    private getStatusForLiftId = (liftId: string) => {
-        client.cache.reset();
+    private getCapacityForAllLifts = () => {
         return client.query({
             query: gql`
                 query {
-                    Lift(id: "${liftId}") {
-                        name
-                        status
+                    allLifts {
+                        id
                         capacity
                     }
                 }`
-        }).catch(error => {return {data: { Lift: {name: liftId, status: 'not a lift that we know of.'}}}});
+        }).then((data: any) => {
+            this.getFullDataForAllLifts();
+        }).catch(error => {});
     }
+
+    private getFullDataForAllLifts = () => {
+        const liftData = client.readQuery({
+            query: gql`
+                query {
+                    allLifts {
+                        name
+                        status
+                        id
+                        capacity
+                    }
+                }`
+        });
+        this.setState({ lifts: liftData.allLifts })
+        console.log(this.state);
+        
+    }
+
     private setStatusForLiftId = (liftId: string, status: string) => {
         return client.mutate({
             mutation: gql`
@@ -90,33 +107,32 @@ class XWiki extends Component<XWikiProps, XWikiState> {
                     setLiftStatus(id: "${liftId}", status: ${status}) {
                         name
                         status
-                        capacity
+                        id
                     }
                 }`
+        }).then(() => {
+            this.getDataForAllLifts()
         }).catch(error => {});
     }
 
     connectedCallback() {
-        this.getStatusForAllLifts().then((data: any) => {
-            this.setState({ items: data.data.allLifts })
-        })
+        this.getDataForAllLifts();
     }
     get defaultState() {
         return {
-            items: [],
-            liftId: 'jazz-cat'
+            lifts: []
         }
     }
     render() {
         const {
-            items,
+            lifts,
         } = this.props;
 
         const renderProps: XWikiProps = {
-            items: this.state.items
+            lifts: this.state.lifts
         }
 
-        return template(this.html, renderProps, this.onEnterGet, this.onEnterSet);
+        return template(this.html, renderProps, this.onEnterSet, this.showLiftInfo, this.hideLiftInfo);
     }
 }
 

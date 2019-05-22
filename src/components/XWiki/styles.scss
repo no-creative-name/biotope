@@ -1,38 +1,104 @@
 @import "node_modules/@biotope/element/lib/host.mixin";
 
-@include host('x-wiki') {
-    a {
-        cursor: pointer;
-        background: lightblue;
-        padding: 10px;
+@keyframes blinker {
+    0%   {
+        filter: brightness(1);
+        -webkit-filter: brightness(1);
+    }
+    50%  {
+        filter: brightness(0.5);
+        -webkit-filter: brightness(0.5);
+    }
+    100% {
+        filter: brightness(1);
+        -webkit-filter: brightness(1);
+    }
+}
 
-        &:hover {
-            background: lightgrey;
-        }
+@include host('x-wiki') {
+	* {
+		font-family: Helvetica;
+	}
+	h3 {
+		display: inline-block;
     }
-    h3 {
-        display: inline-block;
+    
+    .container {
+        display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		height: 100vh;
     }
-    .statusContainer {
-        display: flex;
-        align-items: center;
+
+	.status {
+		* {
+			pointer-events: none;
+		}
+		display: flex;
+		align-items: center;
+
+		&__indicator {
+			display: inline-block;
+			width: 20px;
+			height: 20px;
+			margin-left: 10px;
+			margin-right: 10px;
+			background-color: black;
+			border: 3px white;
+			border-radius: 15px;
+
+			&.open {
+				background-color: green;
+			}
+
+			&.closed {
+				background-color: orangered;
+				animation-name: blinker;
+				animation-duration: 1s;
+				animation-iteration-count: infinite;
+			}
+
+			&.hold {
+				background-color: yellow;
+			}
+		}
+		&__card {
+			position: absolute;
+			display: none;
+			background-color: black;
+			color: white;
+			padding: 8px 15px 8px 15px;
+			margin-left: 250px;
+			border-radius: 10px;
+			&.show {
+				display: block;
+			}
+		}
     }
-    .status {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        margin-left: 10px;
-        margin-right: 10px;
-        background-color: black;
-        border: 3px white dotted;
-        &.open {
-            background-color: lightgreen;
-        }
-        &.closed {
-            background-color: red;
-        }
-        &.hold {
-            background-color: yellow;
-        }
+    
+    .liftSelection {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		height: 130px;
+		margin: auto;
+
+		select {
+			width: 100%;
+			height: 50px;
+			font-size: 20px;
+		}
+		a {
+			cursor: pointer;
+			background: black;
+			color: white;
+			transition: 0.2s;
+			padding: 8px 15px 8px 15px;
+			margin-left: 5px;
+			border-radius: 10px;
+	
+			&:hover {
+				background: lightgrey;
+			}
+		}
     }
 }
