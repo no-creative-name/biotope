@@ -1,8 +1,11 @@
 import * as styles from './styles.scss';
 import Component from '@biotope/element';
+import { wire } from 'hyperhtml';
+import { Lift } from './XLiftInfo';
 
-interface XWikiTemplateData {
-    lifts: any
+interface XLiftInfoRenderProps {
+    lifts: Lift[];
+    selectedLiftId: string;
 }
 
 const createLiftInfo = (data, showLiftInfo, hideLiftInfo) => {
@@ -18,7 +21,7 @@ const createLiftInfo = (data, showLiftInfo, hideLiftInfo) => {
     return map;
 }
 
-export default (render: Function, data: XWikiTemplateData, onEnterSet: Function, showLiftInfo: Function, hideLiftInfo: Function) => {
+export default (render: Function, data: XLiftInfoRenderProps, onEnterSet: Function, showLiftInfo: Function, hideLiftInfo: Function) => {
     return render`
         <style>${styles.toString()}</style>
         <div class="container">
@@ -28,7 +31,7 @@ export default (render: Function, data: XWikiTemplateData, onEnterSet: Function,
             <div class="liftSelection">
                 <select id="liftSelection__select">
                     ${data.lifts.map(lift => {
-                        return `<option value="${lift.id}">${lift.name}</option>`
+                        return data.selectedLiftId == lift.id ? `<option selected value="${lift.id}">${lift.name}</option>` : `<option value="${lift.id}">${lift.name}</option>` 
                     })}
                 </select>
                 <a onclick=${onEnterSet}>open</a>

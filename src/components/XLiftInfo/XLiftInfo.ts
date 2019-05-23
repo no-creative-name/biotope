@@ -5,15 +5,12 @@ import ApolloClient from 'apollo-boost';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import gql from 'graphql-tag';
 
-interface XWikiProps {
-    lifts: Lift[]
+interface XLiftInfoState {
+    lifts: Lift[];
+    selectedLiftId: string;
 }
 
-interface XWikiState {
-    lifts: Lift[]
-}
-
-interface Lift {
+export interface Lift {
     name: string;
     status: string;
     capacity: number;
@@ -27,12 +24,13 @@ const client = new ApolloClient({
     cache
 });
 
-class XWiki extends Component<XWikiProps, XWikiState> {
-    static componentName = 'x-wiki';
+class XLiftInfo extends Component<{}, XLiftInfoState> {
+    static componentName = 'x-lift-info';
 
     private onEnterSet = (event) => {
         const liftId = (<HTMLInputElement>this.shadowRoot.getElementById('liftSelection__select')).value;
-        
+        this.setState({selectedLiftId: liftId});
+
         let statusToSet;
         switch(event.target.innerHTML) {
             case 'open': statusToSet = 'OPEN'; break;
@@ -45,7 +43,7 @@ class XWiki extends Component<XWikiProps, XWikiState> {
 
     private showLiftInfo = (event) => {
         if(this.state.lifts[0].capacity == undefined) {
-            this.getCapacityForAllLifts()
+            this.getCapacityForAllLifts();
         }
         event.target.getElementsByClassName('status__card')[0].classList.add('show');
     }
@@ -66,7 +64,7 @@ class XWiki extends Component<XWikiProps, XWikiState> {
                 }`
         }).then((data: any) => {
             this.setState({ lifts: data.data.allLifts })
-        }).catch(error => {});
+        }).catch(error => console.error(error));
     }
 
     private getCapacityForAllLifts = () => {
@@ -80,7 +78,7 @@ class XWiki extends Component<XWikiProps, XWikiState> {
                 }`
         }).then((data: any) => {
             this.getFullDataForAllLifts();
-        }).catch(error => {});
+        }).catch(error => console.error(error));
     }
 
     private getFullDataForAllLifts = () => {
@@ -96,8 +94,6 @@ class XWiki extends Component<XWikiProps, XWikiState> {
                 }`
         });
         this.setState({ lifts: liftData.allLifts })
-        console.log(this.state);
-        
     }
 
     private setStatusForLiftId = (liftId: string, status: string) => {
@@ -112,28 +108,23 @@ class XWiki extends Component<XWikiProps, XWikiState> {
                 }`
         }).then(() => {
             this.getDataForAllLifts()
-        }).catch(error => {});
+        }).catch(error => console.error(error));
     }
 
     connectedCallback() {
         this.getDataForAllLifts();
     }
+    
     get defaultState() {
         return {
-            lifts: []
+            lifts: [],
+            selectedLiftId: ''
         }
     }
+
     render() {
-        const {
-            lifts,
-        } = this.props;
-
-        const renderProps: XWikiProps = {
-            lifts: this.state.lifts
-        }
-
-        return template(this.html, renderProps, this.onEnterSet, this.showLiftInfo, this.hideLiftInfo);
+        return template(this.html, this.state, this.onEnterSet, this.showLiftInfo, this.hideLiftInfo);
     }
 }
 
-export default XWiki;
+export default XLiftInfo;

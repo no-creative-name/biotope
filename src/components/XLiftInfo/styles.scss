@@ -15,7 +15,7 @@
     }
 }
 
-@include host('x-wiki') {
+@include host('x-lift-info') {
 	* {
 		font-family: Helvetica;
 	}
@@ -27,14 +27,26 @@
         display: grid;
 		grid-template-columns: repeat(2, 1fr);
 		height: 100vh;
-    }
+	}
+	
+	.statusInfo {
+		display: grid;
+	}
 
 	.status {
+		display: flex;
+		align-items: center;
+		background-color: lightgrey;
+		padding-right: 10px;
+		transition: 0.2s;
+
 		* {
 			pointer-events: none;
 		}
-		display: flex;
-		align-items: center;
+
+		&:hover {
+			background-color: white;
+		}
 
 		&__indicator {
 			display: inline-block;
@@ -62,12 +74,11 @@
 			}
 		}
 		&__card {
-			position: absolute;
 			display: none;
 			background-color: black;
 			color: white;
 			padding: 8px 15px 8px 15px;
-			margin-left: 250px;
+			margin-left: auto;
 			border-radius: 10px;
 			&.show {
 				display: block;
